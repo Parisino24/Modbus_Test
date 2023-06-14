@@ -1,0 +1,24 @@
+#[tokio::main(flavor = "current_thread")]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    use tokio_modbus::prelude::*;
+
+    let socket_addr = "127.0.0.1:502".parse().unwrap();
+
+    let mut ctx = tcp::connect(socket_addr).await?;
+    let start_address = 1133;
+    let quantity = 2;
+
+    println!("Fetching the coupler ID");
+    let rsp = ctx.call(Request::ReadInputRegisters(start_address, quantity)).await?;
+
+    match rsp {
+        Response::Custom(f, rsp) => {
+            println!("Result for function {f} is '{rsp:?}'");
+        }
+        _ => {
+            panic!("unexpected result");
+        }
+    }
+
+    Ok(())
+}
